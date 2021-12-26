@@ -3,6 +3,7 @@ package main
 import (
 	//#include <stdlib.h>
 	"C"
+	"sync"
 	"time"
 	"unsafe"
 )
@@ -15,6 +16,7 @@ func main() {
 	print(result)
 }
 
+var mutex = sync.Mutex{}
 var result = ""
 var cResult *C.char = nil
 
@@ -27,10 +29,14 @@ func read(x, y, w, h int) {
 
 //export lastResult
 func lastResult() *C.char {
+	mutex.Lock()
+	defer mutex.Unlock()
 	return cResult
 }
 
 func setResult(res string) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	result = res
 	C.free(unsafe.Pointer(cResult))
 	cResult = C.CString(res)
